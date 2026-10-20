@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brian’s Apps</title>
+<meta name="description" content="HTML games and tools built on a phone. Tap one to open it.">
+<meta name="theme-color" content="#14163a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕹️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f6fb; --surface: #ffffff; --ink: #14163a; --muted: #5d6286;
+    --line: #dfe2f0; --accent: #3d5afe; --accent-ink: #ffffff; --mark: #ffd84d;
+    --hl-ink: #14163a; --radius: 22px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14163a; --surface: #1d2050; --ink: #f1f2ff; --muted: #a3a8d6;
+      --line: #2e3270; --accent: #8fa0ff; --accent-ink: #14163a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14163a; --surface: #1d2050; --ink: #f1f2ff; --muted: #a3a8d6;
+    --line: #2e3270; --accent: #8fa0ff; --accent-ink: #14163a;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.5;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 16px 20px 56px; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 10px; }
+
+  .bar { display: flex; align-items: center; justify-content: flex-end; min-height: 48px; }
+  .theme {
+    appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    width: 44px; height: 44px; border-radius: 50%; font-size: 1.15rem; cursor: pointer;
+  }
+
+  .hero { padding: 20px 0 28px; }
+  h1 {
+    margin: 0; font-weight: 800; letter-spacing: -0.04em;
+    font-size: clamp(2.3rem, 9.5vw, 4.8rem);
+    line-height: 1.08;
+    overflow-wrap: break-word;
+  }
+  h1 .hl {
+    background: var(--mark); color: #14163a;
+    padding: 0 0.14em; border-radius: 0.14em;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  }
+  .sup { font-size: 0.45em; vertical-align: super; font-weight: 600; color: var(--accent); }
+  .sub { margin: 16px 0 0; max-width: 34ch; font-size: 1.1rem; color: var(--muted); }
+
+  .controls { display: grid; gap: 14px; margin: 0 0 8px; }
+  .search {
+    width: 100%; height: 52px; padding: 0 18px; border-radius: 16px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    font: inherit; font-size: 1rem;
+  }
+  .search::placeholder { color: var(--muted); }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none; min-height: 44px; padding: 0 18px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    font: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .section { margin-top: 34px; }
+  .section h2 {
+    display: flex; align-items: baseline; gap: 10px;
+    margin: 0 0 14px; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+  }
+  .section h2 small { font-size: 0.95rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+
+  .grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .card {
+    position: relative; display: flex; flex-direction: column; gap: 12px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px; text-decoration: none; color: inherit;
+    transition: transform .18s ease, border-color .18s ease;
+  }
+  a.card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  a.card:active { transform: scale(0.985); }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .icon {
+    width: 60px; height: 60px; border-radius: 19px; display: grid; place-items: center;
+    font-size: 1.9rem; background: var(--tint, #3d5afe); box-shadow: inset 0 -6px 0 rgba(0,0,0,.14);
+  }
+  .badge { font-size: 0.82rem; font-weight: 700; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); }
+  .badge.live { background: #c9f7d8; color: #0d4a24; border-color: #c9f7d8; }
+  .badge.beta { background: var(--mark); color: #4a3a00; border-color: var(--mark); }
+  .badge.soon { color: var(--muted); }
+  .name { margin: 0; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; }
+  .desc { margin: 0; color: var(--muted); font-size: 1rem; }
+  .go {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 48px;
+    padding: 0 20px; border-radius: 14px; font-weight: 700;
+    background: var(--accent); color: var(--accent-ink); align-self: flex-start; margin-top: auto;
+  }
+  .card.is-soon .go { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+  .card.is-soon { opacity: .88; }
+
+  .empty { text-align: center; color: var(--muted); padding: 48px 12px; }
+
+  footer { margin-top: 52px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+  footer p { margin: 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .enter .card { animation: settle .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 70ms); }
+    @keyframes settle { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+  }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="bar">
+    <button class="theme" id="theme" aria-label="Toggle light and dark theme">🌗</button>
+  </div>
+
+  <header class="hero">
+    <h1>Stuff I built on <span class="hl">my phone</span><span class="sup">*</span></h1>
+    <p class="sub">HTML games and tools. Tap one to open it.</p>
+  </header>
+
+  <div class="controls">
+    <input class="search" id="search" type="search" placeholder="Search apps" aria-label="Search apps" autocomplete="off">
+    <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+  </div>
+
+  <main id="main" class="enter"></main>
+  <div class="empty" id="empty" hidden>
+    <p>No apps match that search.</p>
+    <button class="chip" id="clear" type="button">Clear filters</button>
+  </div>
+
+  <footer>
+    <p>* Mostly in short bursts, mostly one thumb. Results may include typos.</p>
+  </footer>
+</div>
+
+<script>
+/* ==========================================================
+   ADD A NEW APP: copy one block in APPS, edit it, commit.
+
+   name      – app title
+   desc      – one or two plain sentences
+   emoji     – shown on the icon tile
+   color     – tile color (any hex)
+   url       – link to the app. Relative paths work for apps in this
+               repo (e.g. "my-game/" or "my-game.html"). Leave "" for
+               coming soon (card becomes non-clickable).
+   status    – "live", "beta", or "soon"
+   category  – must match a name in CATEGORIES below
+
+   ADD A NEW CATEGORY: add its name to CATEGORIES. Sections and
+   filter chips build themselves, in that order.
+   ========================================================== */
+const CATEGORIES = ["Games", "Tools"];
+
+const APPS = [
+  {
+    name: "Silly Showdown",
+    desc: "A Kids vs Parents game-show party game. One screen, a lot of shouting, zero setup.",
+    emoji: "🎉", color: "#ff6b6b", url: "silly-showdown/", status: "live", category: "Games"
+  },
+  {
+    name: "Pickwork",
+    desc: "Learn guitar like a rhythm game. Play a real guitar and it listens for your notes and watches your hand position.",
+    emoji: "🎸", color: "#7c5cff", url: "pickwork/", status: "beta", category: "Games"
+  }
+
+  /* ,{
+    name: "Your Next App",
+    desc: "What it does, in one sentence.",
+    emoji: "✨", color: "#ff9f1c", url: "your-app/", status: "live", category: "Tools"
+  } */
+];
+
+/* ---------- everything below just works; no edits needed ---------- */
+const $ = (id) => document.getElementById(id);
+const main = $("main"), chipsEl = $("chips"), search = $("search");
+let active = "All";
+const STATUS = { live: "Live", beta: "Beta", soon: "Coming soon" };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function buildChips() {
+  const used = CATEGORIES.filter((c) => APPS.some((a) => a.category === c));
+  chipsEl.innerHTML = ["All", ...used].map((c) =>
+    `<button class="chip" type="button" data-cat="${esc(c)}" aria-pressed="${c === active}">${esc(c)}</button>`).join("");
+}
+
+function matches(a) {
+  const q = search.value.trim().toLowerCase();
+  const catOk = active === "All" || a.category === active;
+  return catOk && (!q || (a.name + " " + a.desc).toLowerCase().includes(q));
+}
+
+let n = 0;
+function card(a) {
+  const status = a.status || (a.url ? "live" : "soon");
+  const soon = !a.url || status === "soon";
+  const tag = soon ? "div" : "a";
+  const href = soon ? "" : ` href="${esc(a.url)}"`;
+  return `
+  <${tag} class="card${soon ? " is-soon" : ""}"${href} style="--tint:${esc(a.color || "#3d5afe")};--i:${n++}">
+    <div class="top">
+      <div class="icon" aria-hidden="true">${esc(a.emoji || "🕹️")}</div>
+      <span class="badge ${esc(status)}">${esc(STATUS[status] || status)}</span>
+    </div>
+    <h3 class="name">${esc(a.name)}</h3>
+    <p class="desc">${esc(a.desc || "")}</p>
+    <span class="go">${soon ? "Coming soon" : "Open"}</span>
+  </${tag}>`;
+}
+
+function render(animate) {
+  n = 0;
+  main.classList.toggle("enter", !!animate);
+  const known = new Set(CATEGORIES);
+  const cats = [...CATEGORIES, ...new Set(APPS.map((a) => a.category).filter((c) => c && !known.has(c)))];
+  let html = "", total = 0;
+  for (const c of cats) {
+    const list = APPS.filter((a) => (a.category || "Other") === c && matches(a));
+    if (!list.length) continue;
+    total += list.length;
+    html += `<section class="section"><h2>${esc(c)} <small>${list.length}</small></h2><div class="grid">${list.map(card).join("")}</div></section>`;
+  }
+  main.innerHTML = html;
+  $("empty").hidden = total > 0;
+}
+
+chipsEl.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-cat]");
+  if (!b) return;
+  active = b.dataset.cat; buildChips(); render(false);
+});
+search.addEventListener("input", () => render(false));
+$("clear").addEventListener("click", () => { search.value = ""; active = "All"; buildChips(); render(false); });
+
+const root = document.documentElement;
+try { const t = localStorage.getItem("theme"); if (t) root.dataset.theme = t; } catch (e) {}
+$("theme").addEventListener("click", () => {
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+});
+
+buildChips(); render(true);
+</script>
+</body>
+</html>
