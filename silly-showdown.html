@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2a0a5e">
+<title>Silly Showdown: Kids vs Parents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg1:#5a1fc2; --bg2:#1d0647; --ink:#ffffff; --card:rgba(255,255,255,.13);
+  --gold:#ffd23f; --pink:#ff3d9a; --cyan:#27e1ff; --green:#19c95f; --red:#ff3b55;
+  --deep:#2a0a5e; --paper:#ffffff;
+  --display:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif;
+  --body:'Baloo 2','Trebuchet MS',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg1:#3c117f;--bg2:#0f0326;--card:rgba(255,255,255,.10)}
+}
+:root[data-theme="dark"]{--bg1:#3c117f;--bg2:#0f0326;--card:rgba(255,255,255,.10)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0;height:100%;overflow:hidden;color:var(--ink);font-family:var(--body);font-weight:700;
+  background-color:var(--bg2);
+  background-image:radial-gradient(120% 80% at 50% -15%,var(--bg1) 0%,var(--bg2) 70%);
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+}
+body::before{
+  content:"";position:fixed;left:50%;top:-40%;width:200vmax;height:200vmax;margin-left:-100vmax;
+  background:conic-gradient(from 0deg,transparent 0 8%,rgba(255,79,163,.22) 10%,transparent 13% 33%,rgba(39,225,255,.20) 35%,transparent 38% 58%,rgba(255,210,63,.20) 60%,transparent 63% 83%,rgba(255,79,163,.18) 85%,transparent 88%);
+  animation:spin 40s linear infinite;pointer-events:none;z-index:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#app{position:relative;z-index:1;height:100%;max-width:1400px;margin:0 auto;padding:8px 12px;display:flex;flex-direction:column;gap:8px}
+
+/* scoreboard */
+#board{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch;flex:none}
+.team{display:flex;align-items:center;gap:8px;background:var(--card);border:3px solid transparent;border-radius:18px;padding:6px 10px;min-width:0;transition:transform .2s,border-color .2s,box-shadow .2s}
+.team.t1{flex-direction:row-reverse;text-align:right}
+.team.on{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,210,63,.25),0 0 30px rgba(255,210,63,.45);transform:scale(1.03)}
+.team .em{font-size:clamp(26px,6vmin,56px);line-height:1}
+.team .nmw{flex:1;min-width:0}
+.team .nm{font-size:clamp(13px,2.6vmin,28px);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team .sc{font-family:var(--display);font-size:clamp(26px,6.5vmin,60px);color:var(--gold);line-height:1}
+.team .sc.bump{animation:bump .5s}
+@keyframes bump{30%{transform:scale(1.5)}100%{transform:scale(1)}}
+.mid{align-self:center;font-family:var(--display);font-size:clamp(11px,2.2vmin,22px);background:var(--deep);border:2px solid var(--gold);color:var(--gold);padding:4px 10px;border-radius:999px;white-space:nowrap}
+
+/* stage */
+#stage{flex:1;min-height:0;display:flex;flex-direction:column;overflow:auto;-webkit-overflow-scrolling:touch}
+.pg{margin:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,2vmin,22px);text-align:center;padding:4px 2px}
+#stage.animate .pg{animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{0%{transform:scale(.75);opacity:0}100%{transform:scale(1);opacity:1}}
+.kick{font-family:var(--display);color:var(--gold);font-size:clamp(16px,3.4vmin,34px);letter-spacing:.04em}
+.bigemoji{font-size:clamp(70px,min(24vw,24vh),220px);line-height:1}
+.title{font-family:var(--display);font-size:clamp(34px,min(10.5vw,10.5vh),108px);line-height:1.02;text-shadow:0 4px 0 rgba(0,0,0,.35);max-width:16ch}
+.title.wide{max-width:none}
+.title .yu{color:var(--gold)}
+.sub{font-size:clamp(17px,min(4.4vw,4.4vh),42px);line-height:1.18;max-width:26ch;opacity:.95}
+.sub.wide{max-width:34ch}
+.chip{display:inline-block;background:var(--gold);color:var(--deep);font-family:var(--display);font-size:clamp(15px,3.2vmin,30px);padding:4px 16px;border-radius:999px}
+.upline{font-family:var(--display);font-size:clamp(20px,4.4vmin,44px)}
+.twist{background:var(--pink);color:#fff;font-family:var(--display);font-size:clamp(17px,4vmin,40px);line-height:1.1;padding:8px 18px;border-radius:16px;transform:rotate(-1.5deg);box-shadow:0 5px 0 rgba(0,0,0,.3);max-width:min(100%,900px);animation:wig 1.6s ease-in-out infinite}
+@keyframes wig{50%{transform:rotate(1.5deg) scale(1.03)}}
+.prompt{background:var(--paper);color:var(--deep);border-radius:28px;padding:clamp(12px,2.6vmin,32px) clamp(14px,3vmin,36px);box-shadow:0 10px 0 rgba(0,0,0,.3);width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vmin,12px)}
+.prompt .pe{font-size:clamp(54px,min(17vw,17vh),170px);line-height:1}
+.prompt .pt{font-family:var(--display);font-size:clamp(28px,min(8.2vw,8.2vh),92px);line-height:1.08}
+.prompt.small .pe{font-size:clamp(40px,10vmin,100px)}
+.prompt.small .pt{font-size:clamp(22px,5.4vmin,56px)}
+.prompt.hush{background:var(--deep);color:#fff;border:4px dashed var(--gold)}
+.timer{width:100%;max-width:900px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tnum{font-family:var(--display);font-size:clamp(48px,14vmin,150px);line-height:1;color:var(--gold);text-shadow:0 4px 0 rgba(0,0,0,.35)}
+.tnum.hot{color:var(--red);animation:pulse .5s infinite alternate}
+@keyframes pulse{to{transform:scale(1.15)}}
+.tbar{width:100%;height:clamp(12px,2.6vmin,26px);background:rgba(0,0,0,.35);border-radius:999px;overflow:hidden}
+.tbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:999px}
+.tbar i.hot{background:var(--red)}
+.timeup{font-family:var(--display);font-size:clamp(28px,7vmin,70px);color:var(--red);animation:pulse .4s infinite alternate}
+.okc{color:var(--green)}.nc{color:var(--red)}
+.pts{font-family:var(--display);font-size:clamp(28px,7vmin,72px);color:var(--gold)}
+.why{font-size:clamp(17px,min(4.2vw,4.2vh),38px);max-width:28ch;line-height:1.2}
+.verdict{font-family:var(--display);font-size:clamp(40px,11vmin,120px);line-height:1}
+.rl{font-family:var(--display);font-size:clamp(18px,4vmin,38px);background:var(--card);padding:6px 16px;border-radius:14px}
+
+/* controls */
+#ctl{flex:none;display:flex;flex-direction:column;gap:8px;width:100%;max-width:900px;margin:0 auto}
+.btn{font-family:var(--display);font-size:clamp(22px,5.4vmin,44px);line-height:1.05;padding:clamp(13px,3vmin,26px) 12px;border:0;border-radius:22px;color:#fff;background:var(--pink);box-shadow:0 6px 0 rgba(0,0,0,.35);cursor:pointer;touch-action:manipulation;width:100%}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.btn:focus-visible,.tool:focus-visible,.pill:focus-visible,.ep:focus-visible{outline:4px solid var(--cyan);outline-offset:2px}
+.btn.go{background:var(--gold);color:var(--deep)}
+.btn.yes{background:var(--green)}
+.btn.no{background:var(--red)}
+.btn.alt{background:var(--cyan);color:var(--deep)}
+.btn small{display:block;font-family:var(--body);font-size:.5em;opacity:.8}
+.two,.four{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+.tool{font-family:var(--body);font-weight:800;font-size:15px;background:rgba(255,255,255,.15);border:0;color:#fff;border-radius:14px;padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.tvon{font-size:14px;color:var(--cyan)}
+.peek{touch-action:none;-webkit-touch-callout:none}
+
+/* setup */
+.logo{font-family:var(--display);font-size:clamp(40px,min(14vw,12vh),120px);line-height:.95;text-shadow:0 5px 0 rgba(0,0,0,.4);color:var(--gold)}
+.panel{background:var(--card);border-radius:22px;padding:12px;width:100%;max-width:640px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.trow{display:flex;align-items:center;gap:10px}
+.trow .big{font-size:40px}
+.trow input{flex:1;min-width:0;font-family:var(--display);font-size:26px;padding:8px 12px;border-radius:14px;border:3px solid transparent;background:#fff;color:var(--deep);-webkit-user-select:text;user-select:text}
+.trow input:focus{outline:none;border-color:var(--cyan)}
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.ep{font-size:26px;background:rgba(255,255,255,.12);border:3px solid transparent;border-radius:12px;padding:2px 6px;cursor:pointer}
+.ep.on{border-color:var(--gold);background:rgba(255,210,63,.25)}
+.lab{font-size:16px;opacity:.9}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-family:var(--body);font-weight:800;font-size:17px;background:rgba(255,255,255,.14);color:#fff;border:3px solid transparent;border-radius:999px;padding:6px 14px;cursor:pointer;touch-action:manipulation}
+.pill.on{background:var(--gold);color:var(--deep)}
+.tvnote{font-size:14px;opacity:.85;max-width:44ch}
+
+.ann{background:#fff;color:var(--deep);border-radius:20px;padding:8px 18px;font-size:clamp(15px,3.2vmin,30px);line-height:1.2;max-width:min(100%,900px);box-shadow:0 5px 0 rgba(0,0,0,.3)}
+.sel{font-family:var(--body);font-weight:800;font-size:16px;max-width:100%;padding:7px 10px;border-radius:12px;border:3px solid transparent;background:#fff;color:var(--deep)}
+#fx{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5}
+.cf{position:absolute;top:-12vh;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(120vh) rotate(720deg)}}
+#ov{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:rgba(15,3,38,.88);text-align:center;font-family:var(--display);font-size:clamp(34px,9vmin,90px);line-height:1.1;cursor:pointer}
+#ov small{display:block;font-family:var(--body);font-size:.4em;margin-top:10px;color:var(--gold)}
+@media (prefers-reduced-motion:reduce){body::before,.twist{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="board"></header>
+  <main id="stage" class="stage"></main>
+  <footer id="ctl"></footer>
+</div>
+<div id="fx"></div>
+<div id="ov"></div>
+
+<script>
+(function(){
+'use strict';
+var isTV = /[#?&]tv\b/.test(location.hash + location.search);
+var $ = function(s){ return document.querySelector(s); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var rand = function(a){ return a[Math.floor(Math.random()*a.length)]; };
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+/* ---------- CONTENT ---------- */
+var POOLS = {
+charades:[
+["🐱","A cat who just realized it’s Monday"],
+["🦖","A T-Rex trying to make a bed"],
+["🐧","A penguin running late for work"],
+["🍦","A kid who just dropped their ice cream"],
+["🤖","A robot that is very ticklish"],
+["🧟","A zombie doing yoga"],
+["🦸","A superhero who forgot their cape"],
+["🦥","A sloth in a race"],
+["🐙","An octopus trying to put on socks"],
+["👨‍🍳","A chef whose soup just exploded"],
+["🚀","An astronaut who lost their snack"],
+["🐔","A chicken who thinks it’s a ballerina"],
+["🦈","A shark brushing its teeth"],
+["🧙","A wizard stuck in traffic"],
+["🕺","A dad dancing at a wedding"],
+["🐸","A frog on a trampoline"],
+["🏴‍☠️","A pirate singing karaoke"],
+["🥶","Someone jumping into a freezing pool"],
+["🦆","A duck slipping on ice"],
+["🛒","A runaway shopping cart"],
+["🍕","A pizza delivery guy chased by a goose"],
+["🐒","A monkey learning to drive"],
+["😴","A sleepwalking giraffe"],
+["🐶","A dog who sees the vacuum cleaner"]
+],
+sound:[
+["🐦","A seagull stealing french fries"],
+["🤖","A robot with the hiccups"],
+["📞","Old-school dial-up internet"],
+["🍿","Popcorn popping in the microwave"],
+["🐹","A hamster singing opera"],
+["🐸","A frog with a cold"],
+["🐄","A cow getting tickled"],
+["🐶","A dog who just spotted a squirrel"],
+["🎈","A balloon slowly losing air"],
+["🧟","A zombie who lost its phone"],
+["🐘","An elephant sneezing"],
+["🚗","A car that won’t start"],
+["🐷","A pig playing the trombone"],
+["🦆","A duck arguing with a goose"],
+["🐝","A bee stuck in a jar"],
+["🍅","The last squirt of a ketchup bottle"],
+["🦖","A T-Rex trying to whisper"],
+["🥁","A drum set falling down the stairs"],
+["🚨","A smoke alarm with a low battery"],
+["🐈","A cat coughing up a hairball"]
+],
+draw:[
+["🍕","A pizza riding a skateboard"],
+["🦈","A shark in a business suit"],
+["🥪","A very sad sandwich"],
+["🏠","A house with legs"],
+["🐙","An octopus playing the drums"],
+["🌮","A taco on vacation"],
+["🦒","A giraffe wearing a scarf"],
+["🤖","A robot eating spaghetti"],
+["🐔","A chicken in a race car"],
+["🧁","A cupcake with a mustache"],
+["🦄","A unicorn doing the dishes"],
+["🐢","A turtle riding a rocket"],
+["🍌","A banana in a bow tie"],
+["🐊","A crocodile brushing its teeth"],
+["🌈","A rainbow slipping on a banana peel"],
+["🐶","A dog in a top hat"],
+["🐄","A cow on the moon"],
+["⛄","A snowman at the beach"],
+["🐧","A penguin on a pogo stick"],
+["👑","A king made of cheese"]
+],
+know:[
+["🍿","What snack can {them} never say no to?"],
+["🤢","What food would {them} never, ever eat?"],
+["🗣️","What’s something {them} say ALL the time?"],
+["💰","What would {them} do with a million dollars?"],
+["📺","What’s {them}’s favorite thing to watch?"],
+["🦁","Which animal is {them} most like?"],
+["😴","What’s {them}’s best excuse to get out of chores?"],
+["🍔","What would {them} pick for a last meal?"],
+["🎭","What’s {them}’s secret talent?"],
+["😱","What’s the silliest thing {them} is scared of?"],
+["🎵","What song could {them} listen to on repeat?"],
+["🦸","Which superpower would {them} pick?"],
+["🏝️","Where would {them} go on a dream vacation?"],
+["🐾","What would {them}’s dream pet be?"]
+],
+laugh:[
+["🦸","Name the worst superpower ever."],
+["🍕","Come up with a terrible name for a pizza place."],
+["🐉","What should you NEVER say to a dragon?"],
+["🥣","What’s the worst thing to find in your cereal?"],
+["🐠","Give a silly name for a pet goldfish."],
+["🤷","Say something a grown-up says that makes no sense."],
+["⏰","What’s the worst excuse for being late to school?"],
+["🏖️","What’s a weird thing to bring to the beach?"],
+["🐶","What would your dog say if it could talk?"],
+["🎂","Invent a terrible theme for a birthday party."],
+["✈️","What’s the worst thing to hear the pilot say?"],
+["🦕","Give a very silly name for a baby dinosaur."],
+["🍦","Invent the worst ice cream flavor."],
+["🌙","What is the moon thinking right now?"],
+["🦹","Invent the worst superhero name."],
+["🥪","What should never go in a sandwich?"],
+["🥠","Write the worst fortune cookie message."]
+],
+rf:[
+["💩","Wombat poop is shaped like little cubes.",1,"REAL! Wombats poop tiny cubes. Nature is weird."],
+["🦩","A group of flamingos is called a “flamboyance.”",1,"REAL! A fabulous name for a fabulous squad."],
+["🐠","Goldfish can only remember things for 3 seconds.",0,"FAKE! They remember for months. They’re just ignoring you."],
+["🍌","Bananas are berries, but strawberries are not.",1,"REAL! Botany is ridiculous."],
+["🐙","Octopuses have three hearts.",1,"REAL! Three hearts and still no phone."],
+["🐦","Ostriches bury their heads in the sand when scared.",0,"FAKE! They just run away REALLY fast."],
+["🦈","Sharks are older than trees.",1,"REAL! Sharks showed up first. Trees came later."],
+["🐄","Cows have best friends and get sad when they’re apart.",1,"REAL! Cow besties are a thing."],
+["🦇","Bats are completely blind.",0,"FAKE! Bats can see just fine. Show-offs."],
+["🍯","Honey basically never goes bad.",1,"REAL! It can last for ages and ages."],
+["⚡","Lightning never strikes the same place twice.",0,"FAKE! It loves hitting tall things again and again."],
+["🪐","On Venus, one day is longer than one year.",1,"REAL! Venus spins so slowly that a day takes longer than its trip around the sun."],
+["🦒","Giraffes have dark purple-ish tongues.",1,"REAL! Dark tongues, maybe to avoid sunburn."],
+["🐊","Crocodiles can’t stick their tongues out.",1,"REAL! Please do not ask one to try."],
+["🦥","Sloths can hold their breath longer than dolphins.",1,"REAL! Up to about 40 minutes. The laziest superpower."],
+["🧠","Humans only use 10% of their brains.",0,"FAKE! You use pretty much all of it. Even the silly parts."],
+["🐌","A snail can sleep for up to three years.",1,"REAL! The ultimate nap."],
+["🐪","Camels store water in their humps.",0,"FAKE! Humps are full of fat, not water."],
+["🐧","Penguins have knees.",1,"REAL! They’re hidden under the feathers."],
+["👑","Cleopatra lived closer in time to the first iPhone than to the building of the Great Pyramid.",1,"REAL! The pyramids were already ancient in her day."],
+["🎶","You can hum a normal tune while pinching your nose shut.",0,"FAKE! Humming needs your nose. Everybody is trying it right now."],
+["🦋","Butterflies taste with their feet.",1,"REAL! They step on food to taste it."],
+["👶","Adults have more bones than babies.",0,"FAKE! Babies have about 300. Adults have 206. Bones fuse together!"],
+["🐘","Elephants are scared of mice.",0,"FAKE! Mostly elephants just want lunch."],
+["🐝","Honeybees can learn to recognize human faces.",1,"REAL! Bees remember faces. Be nice to bees."],
+["🤧","It’s impossible to sneeze with your eyes open.",0,"FAKE! It’s possible. Your eyes just squeeze shut by reflex."],
+["🏔️","Mount Everest is the tallest mountain on Earth when measured from base to peak.",0,"FAKE! Mauna Kea is taller when you measure from the ocean floor."],
+["🦆","A duck’s quack doesn’t echo.",0,"FAKE! It echoes. That’s just a myth."],
+["🥔","Potatoes were the first vegetable grown in space.",1,"REAL! Astronauts grew potatoes in 1995. Space fries, anyone?"]
+]
+};
+var FINALS=[
+["🐻","Polar bears have black skin under their white fur.",1,"REAL! Their fur is see-through and their skin is black to soak up heat."],
+["🪼","Jellyfish have no brain.",1,"REAL! No brain, and they still float like pros."],
+["🌩️","A lightning bolt is hotter than the surface of the sun.",1,"REAL! Way hotter. Like five times hotter."],
+["🐬","Dolphins sleep with half their brain awake.",1,"REAL! Half-asleep all the time. Like parents."],
+["🐜","Ants never take naps.",0,"FAKE! Ants take lots of tiny power naps."],
+["🐘","Elephants can jump higher than a house.",0,"FAKE! Elephants can’t jump at all!"],
+["☁️","A fluffy cloud can weigh as much as a million pounds.",1,"REAL! That’s a whole lot of water floating over your head."]
+];
+var TW={
+charades:["Act it out in SLOW MOTION 🐌","Act it out standing on ONE foot 🦩","Act it out with your EYES CLOSED 🙈","No pointing at anything! 🚫","Hum the Happy Birthday song while acting 🎵"],
+sound:["Add a dramatic dance while you do it 💃","Do it while holding your nose 👃","Do it like an opera singer 🎭","Do it while hopping on one foot 🐰"],
+draw:["Draw with your NON-favorite hand ✋","Draw with your EYES CLOSED 🙈","Draw in ONE line without lifting the pen ✏️","Hold the pen in your mouth 😛"],
+know:["Guess like an opera singer 🎭","Guess while hopping on one foot 🐰","Guess like a pirate, arrr 🏴‍☠️","Guess in super slow motion 🐌"],
+laugh:["Say it like a pirate 🏴‍☠️","Say it like a robot 🤖","Say it in a fancy accent 🎩","Whisper it dramatically 🤫","Say it like a news anchor 📺"]
+};
+var ROUNDS=[
+{k:'charades',e:'🎭',name:'CHARADES CLASH',rule:'Act it out with NO talking! Your team guesses before the clock runs out.',secs:60,secret:1,twist:1,per:1,speed:1,actor:'actor',yes:'✅ GOT IT!',no:'❌ NOPE',hint:'Actor: NO talking! {us}: shout your guesses!'},
+{k:'rf',e:'🤔',name:'REAL OR FAKE?',rule:'Hear a wild statement. Is it REAL or totally FAKE? Decide fast!',secs:20,per:2,hint:'Whisper your team answer, then tell the host!'},
+{k:'sound',e:'🔊',name:'SOUND OFF',rule:'Make the sound with NO words! Your team guesses what it is.',secs:45,secret:1,twist:1,per:1,speed:1,actor:'sound-maker',yes:'✅ GOT IT!',no:'❌ NOPE',hint:'Sounds only, no words! {us}: guess away!'},
+{k:'know',e:'🧠',name:'WHO KNOWS WHO',rule:'Guess what the other team would say. THEY decide if you’re right!',secs:30,twist:1,per:1,speed:1,yes:'✅ RIGHT!',no:'❌ WRONG',hint:'{them}: think of your real answer! {us}: guess it!'},
+{k:'draw',e:'🎨',name:'BLIND DRAW',rule:'Draw it on paper. No talking, no words! Hold it up for your team.',secs:60,secret:1,twist:1,per:1,speed:1,actor:'artist',yes:'✅ GOT IT!',no:'❌ NOPE',hint:'Artist: no talking, no letters! Grab paper and a pen!'},
+{k:'laugh',e:'😂',name:'MAKE ’EM LAUGH',rule:'Give the funniest answer you can. The other team decides: did it get a laugh?',secs:20,twist:1,per:2,yes:'😂 LAUGHED!',no:'😐 CRICKETS',hint:'{them} are the judges. Did it get a laugh?'}
+];
+var OK_HEAD=['NAILED IT!','BOOM!','LEGENDS!','YES YES YES!','CORRECT!','TOO EASY!'];
+var NO_HEAD=['NOPE!','OOOOF!','WAH WAH!','SO CLOSE… NOT!','OH NO!'];
+var OK_LINE=['The crowd goes wild! The crowd is your couch.','Somebody call the newspaper!','Look at you, absolute legends!','Points for you! Do a victory dance.'];
+var NO_LINE=['Bold strategy. It did not work.','The audience politely pretends that never happened.','Yikes. That’s gonna leave a mark.','Nope! But we admire the confidence.'];
+var WIN_LINE=['Bragging rights for one whole week!','Loser team does the dishes. Probably.','The trophy is imaginary but the glory is real.','Legends. Both of you. But mostly the winners.'];
+
+/* ---------- STATE ---------- */
+var S={vname:'',quip:'',screen:'setup',teams:[{n:'The Kids',e:'🦄',s:0},{n:'The Parents',e:'🦖',s:0}],hc:1,len:1,sound:true,voice:true,
+  turns:[],ti:0,phase:'ready',timerEnd:0,timerSecs:0,timeUp:false,res:null,fin:null,spare:{}};
+var ch=null; try{ ch=new BroadcastChannel('silly-showdown-v1'); }catch(e){}
+var tvSeen=0, lastConn=false, quitArm=false, lastKey='', lastResId=0, cfOn=false, lastSec=-1, scPrev=[0,0];
+function tvConn(){ return !isTV && (Date.now()-tvSeen<5000); }
+function cur(){ return S.turns[S.ti]; }
+function fill(t,i){ return t.replace(/\{us\}/g,S.teams[i].n).replace(/\{them\}/g,S.teams[1-i].n); }
+
+function save(){ if(isTV)return; try{ localStorage.setItem('silly-showdown-cfg',JSON.stringify({n:S.teams.map(function(t){return t.n}),e:S.teams.map(function(t){return t.e}),hc:S.hc,len:S.len,sound:S.sound,voice:S.voice,vname:S.vname})); }catch(e){} }
+function load(){ if(isTV)return; try{ var c=JSON.parse(localStorage.getItem('silly-showdown-cfg')||'null'); if(!c)return;
+  if(c.n&&c.e){ for(var i=0;i<2;i++){ if(typeof c.n[i]==='string')S.teams[i].n=c.n[i].slice(0,14); if(typeof c.e[i]==='string')S.teams[i].e=c.e[i]; } }
+  if([-1,0,1].indexOf(c.hc)>-1)S.hc=c.hc; if(c.len===1||c.len===2)S.len=c.len; if(typeof c.sound==='boolean')S.sound=c.sound; if(typeof c.voice==='boolean')S.voice=c.voice; if(typeof c.vname==='string')S.vname=c.vname; }catch(e){} }
+
+/* ---------- AUDIO ---------- */
+var ctx=null;
+function ac(){ try{ if(!ctx){ var C=window.AudioContext||window.webkitAudioContext; if(C)ctx=new C(); } if(ctx&&ctx.state==='suspended')ctx.resume(); }catch(e){} return ctx; }
+function tone(f,d,type,when,vol,slide){ var c=ctx; if(!c)return; var t=c.currentTime+(when||0); var o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||.22,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+0.05); }
+var SFX={
+ ding:function(){ tone(880,.25,'triangle'); tone(1320,.35,'triangle',.08); },
+ go:function(){ tone(440,.12,'square',0,.14); tone(660,.12,'square',.12,.14); tone(990,.3,'square',.24,.14); },
+ tick:function(){ tone(1000,.08,'square',0,.1); },
+ buzz:function(){ tone(160,.7,'sawtooth',0,.22,70); },
+ yes:function(){ [523,659,784,1047].forEach(function(f,i){ tone(f,.25,'triangle',i*.09,.24); }); },
+ no:function(){ tone(300,.25,'sawtooth',0,.18,200); tone(220,.45,'sawtooth',.22,.18,120); },
+ fan:function(){ [392,392,392,523,659,523,659,784].forEach(function(f,i){ tone(f,.22,'square',i*.13,.11); }); },
+ drum:function(){ for(var i=0;i<10;i++) tone(120+i*6,.08,'triangle',i*.07,.2); }
+};
+var EMOJI_RE=/[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\u{FE0F}\u{200D}]/gu;
+function vscore(v){ var n=v.name,sc=0; if(!/^en/i.test(v.lang))return -99;
+  if(/natural|neural|online/i.test(n))sc+=12; if(/premium|enhanced/i.test(n))sc+=9; if(/google us english/i.test(n))sc+=7;
+  if(/\b(guy|davis|tony|aria|jenny|christopher|eric|ryan|matthew|daniel|aaron|alex|samantha|nicky|evan|tom)\b/i.test(n))sc+=4;
+  if(/en[-_]US/i.test(v.lang))sc+=3;
+  if(/espeak|compact|novelty|whisper|zarvox|bad news|bells|cellos|organ|trinoids|wobble|boing|bubbles|albert|fred|junior|kathy|ralph|good news|superstar|jester|grandma|grandpa|rocko|shelley|flo|eddy|reed|sandy/i.test(n))sc-=20;
+  return sc; }
+function voiceList(){ try{ var vs=(window.speechSynthesis&&speechSynthesis.getVoices())||[]; return vs.filter(function(v){ return /^en/i.test(v.lang); }).sort(function(a,b){ return vscore(b)-vscore(a); }); }catch(e){ return []; } }
+function getVoice(){ var l=voiceList(); if(!l.length)return null; if(S.vname){ for(var i=0;i<l.length;i++) if(l[i].name===S.vname) return l[i]; } return l[0]; }
+function speak(text){ if(!S.voice||!text)return; try{ var s=window.speechSynthesis; if(!s)return; s.cancel();
+  var clean=String(text).replace(EMOJI_RE,'').replace(/\s+/g,' ').trim(); var parts=clean.match(/[^.!?…]+[.!?…]*/g)||[clean]; var v=getVoice();
+  parts.forEach(function(p){ p=p.trim(); if(!p)return; var u=new SpeechSynthesisUtterance(p); if(v){ u.voice=v; u.lang=v.lang; } else u.lang='en-US';
+    var ex=/!\s*$/.test(p), q=/\?\s*$/.test(p), dots=/(\.\.\.|…)\s*$/.test(p);
+    u.rate=ex?1.1:(dots?0.82:1.02); u.pitch=ex?1.12:(q?1.06:1.0); u.volume=1; s.speak(u); }); }catch(e){} }
+function play(n,tx){ if(n&&S.sound&&SFX[n]){ ac(); try{ SFX[n](); }catch(e){} } if(tx)speak(tx); }
+function emit(n,tx){ if(isTV){ play(n,tx); return; } if(tvConn()&&ch){ try{ ch.postMessage({t:'snd',n:n,tx:tx}); }catch(e){} } else play(n,tx); }
+
+function burst(n){ var fx=$('#fx'); if(!fx)return; var E=['🎉','⭐','✨','🎊','🪩','💥','🍕','🦄','🎈']; for(var i=0;i<n;i++){ var s=document.createElement('span'); s.className='cf'; s.textContent=rand(E); s.style.left=(Math.random()*100)+'%'; s.style.fontSize=(18+Math.random()*30)+'px'; s.style.animationDuration=(2.4+Math.random()*2.4)+'s'; s.style.animationDelay=(Math.random()*.8)+'s'; fx.appendChild(s); (function(el){ setTimeout(function(){ el.remove(); },5500); })(s); } }
+
+/* ---------- ANNOUNCER ---------- */
+var ANN={
+ charades:'Round one: Charades Clash! Act it out, no talking, and zero dignity!',
+ rf:'Real or Fake! I’ll say some wild facts. Only some are true. Choose wisely!',
+ sound:'Sound Off! Make the noise. No words. Your neighbors are going to have questions!',
+ know:'Who Knows Who! Let’s see how well you REALLY know each other. Spoiler: not very!',
+ draw:'Blind Draw! Grab a pen and lower your expectations!',
+ laugh:'Make ’Em Laugh! Be funny. On purpose. No pressure!'
+};
+var WELCOME=[
+ function(a,b){ return 'Ladies and gentlemen, boys and girls, and whoever is hiding under the couch! Welcome to SILLY SHOWDOWN! Tonight it’s '+a+' versus '+b+'!'; },
+ function(a,b){ return 'Welcome to the only game show where the prizes are made up and the points are very, very real! It’s '+a+' versus '+b+'!'; },
+ function(a,b){ return 'It’s showtime! '+a+', '+b+', may the silliest team win!'; }
+];
+var UP=[
+ function(t){ return t+', you’re up! Try to look confident!'; },
+ function(t){ return 'Step into the spotlight, '+t+'!'; },
+ function(t){ return t+', the crowd is waiting! The crowd is a lamp, but still!'; },
+ function(t){ return 'Put your hands together for '+t+'! Hello? Anyone? Clap!'; },
+ function(t){ return t+', this is your moment. Please don’t waste it.'; }
+];
+var LEAD=[
+ function(l,r,d){ return l+' are in the lead! '+r+', are you even trying?'; },
+ function(l,r,d){ return l+' lead by '+d+' points! '+r+', it’s not too late. It’s a little late.'; },
+ function(l,r,d){ return r+', you are '+d+' points behind. No pressure. Some pressure.'; }
+];
+var GO=['Three, two, one… GO!','And the clock starts NOW!','Go go go go GO!','Annnd GO!'];
+var TEN=['Ten seconds! Panic is encouraged!','Tick tock! Ten seconds left!','Ten seconds! Sweat a little!'];
+var TIMEUP=['Time’s up! Hands down, pride up!','That’s the buzzer! Everyone breathe!','And time! Whatever just happened, it’s over!'];
+var REROLL=['Too hard? Fine. Here’s another one, you big babies.','New prompt! Same lack of dignity.','Switching it up! Let’s pretend that one never happened.'];
+var OK_LINE=['The crowd goes wild! The crowd is your couch.','Somebody call the newspaper!','Look at you, absolute legends!','That’s the smartest thing this living room has ever seen!','Points! Glorious, glorious points!','I’d give you a trophy, but I’m a phone.'];
+var NO_LINE=['Bold strategy. It did not work.','The audience politely pretends that never happened.','Yikes. That’s gonna leave a mark.','Nope! But I admire the confidence.','That was so wrong it came back around to funny.','Somewhere, a trophy just started crying.'];
+var OK_LAUGH=['Ha! Comedy legends!','Somebody get this team a sitcom!','Hilarious! Ten out of ten, would laugh again.'];
+var NO_LAUGH=['I heard crickets.','Tough crowd! Try again next round.','That joke was so bad it needs a hug.'];
+var OK_RF=['Correct! ','You got it! ','Nailed it! '];
+var NO_RF=['Ooh, not quite! ','Nope! ','So close! Not really. '];
+var TESTS=['Ladies and gentlemen, welcome to the silliest show on Earth!','Put your hands together! Hello? Anyone? Clap!'];
+
+/* ---------- GAME LOGIC ---------- */
+function tn(i){ return S.teams[i].n; }
+function standings(){
+  var a=S.teams[0].s,b=S.teams[1].s,d=Math.abs(a-b); if(d<100)return '';
+  var l=a>b?0:1; return rand(LEAD)(tn(l),tn(1-l),d)+' ';
+}
+function pickTw(R,team){ return (R.twist&&S.hc===team)?rand(TW[R.k]):''; }
+function build(){
+  var turns=[],spare={};
+  ROUNDS.forEach(function(R,ri){
+    var pool=shuffle(POOLS[R.k]), n=R.per*S.len*2;
+    for(var i=0;i<n;i++){ var team=(ri+i)%2; turns.push({r:ri,k:R.k,team:team,item:pool[i%pool.length],first:i===0,tw:pickTw(R,team)}); }
+    spare[R.k]=pool.slice(n);
+  });
+  S.turns=turns; S.spare=spare; S.fin=null; S.res=null;
+}
+function start(){
+  ac();
+  S.teams.forEach(function(t,i){ t.n=(t.n||'').trim()||['The Kids','The Parents'][i]; t.s=0; });
+  save(); build(); scPrev=[0,0]; S.ti=0; S.screen='intro'; S.phase='ready';
+  try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').catch(function(){}); }catch(e){}
+  var ann=ANN[ROUNDS[0].k]; S.quip=ann; push();
+  emit('fan',rand(WELCOME)(tn(0),tn(1))+' '+ann);
+}
+function goTurn(){
+  var T=cur(); S.screen='turn'; S.phase='ready'; S.res=null; S.timerEnd=0; S.timeUp=false;
+  var line=(Math.random()<.3?standings():'')+rand(UP)(tn(T.team));
+  if(T.tw)line+=' Oh, and a little penalty: '+T.tw+'.';
+  S.quip=line; push(); emit('ding',line);
+}
+function begin(){
+  var T=cur(),R=ROUNDS[T.r],p=fill(T.item[1],T.team),line;
+  if(R.k==='rf')line=rand(['Real or fake? ','Listen closely: ','Here we go: '])+p;
+  else if(R.k==='know')line=rand(['Question time! ','Here it comes: '])+p;
+  else if(R.k==='laugh')line=rand(['Make me laugh! ','Be funny: ','Go wild: '])+p;
+  else line=rand(GO);
+  S.quip=''; S.phase='live'; S.timerSecs=R.secs; S.timerEnd=Date.now()+R.secs*1000; S.timeUp=false; push(); emit('go',line);
+}
+function score(ok,extra){
+  var T=cur(),R=ROUNDS[T.r],pts=0,bonus=0;
+  if(ok){ pts=100; if(R.speed&&!S.timeUp&&(S.timerEnd-Date.now())>=R.secs*500){ bonus=50; pts+=50; } }
+  S.teams[T.team].s+=pts;
+  var L=R.k==='laugh'?(ok?OK_LAUGH:NO_LAUGH):(ok?OK_LINE:NO_LINE);
+  var res={id:Date.now(),ok:ok,pts:pts,bonus:bonus,head:ok?rand(OK_HEAD):rand(NO_HEAD),line:rand(L)};
+  if(extra)for(var k in extra)res[k]=extra[k];
+  S.res=res; S.phase='result'; S.timerEnd=0; S.quip=''; push();
+  return res;
+}
+function grade(ok){ var res=score(ok); emit(ok?'yes':'no',res.head+' '+res.line+(res.bonus?' And a speed bonus! Fast and fabulous!':'')); }
+function say(realSaid){
+  var T=cur(),ok=realSaid===!!T.item[2]; score(ok,{said:realSaid});
+  emit(ok?'yes':'no',(ok?rand(OK_RF):rand(NO_RF))+'It is '+(T.item[2]?'REAL':'FAKE')+'! '+T.item[3].replace(/^(REAL|FAKE)!\s*/,''));
+}
+function next(){
+  S.ti++;
+  if(S.ti>=S.turns.length){ startFinal(); return; }
+  if(S.turns[S.ti].first){ S.screen='intro'; S.phase='ready'; S.res=null; var t=standings()+ANN[cur().k]; S.quip=t; push(); emit('ding',t); }
+  else goTurn();
+}
+function reroll(){
+  if(S.screen!=='turn'||S.phase==='result')return;
+  var T=cur(),R=ROUNDS[T.r],sp=S.spare[R.k]; T.item=(sp&&sp.length)?sp.pop():rand(POOLS[R.k]);
+  var line=rand(REROLL); if(S.phase==='ready')S.quip=line; push(); emit('ding',line);
+}
+function startFinal(){
+  var t='It’s the FINAL SHOWDOWN! Wager big, win big, cry big! '+tn(0)+', you go first!';
+  S.screen='final'; S.fin={step:'w0',w:[0,0],a:[null,null],item:rand(FINALS),res:null}; S.res=null; S.quip=t; push(); emit('fan',t);
+}
+function wager(v){
+  var f=S.fin,t;
+  if(f.step==='w0'){ f.w[0]=v; f.step='w1'; t=tn(1)+', your turn to wager. Try to look mysterious.'; S.quip=t; push(); emit('ding',t); }
+  else if(f.step==='w1'){ f.w[1]=v; f.step='s0'; t='Wagers locked! '+tn(0)+', whisper your answer to the host. No peeking, '+tn(1)+'!'; S.quip=t; push(); emit('ding',t); }
+}
+function finalSay(v){
+  var f=S.fin,t;
+  if(f.step==='s0'){ f.a[0]=v; f.step='s1'; t=tn(1)+', your answer. Whisper it like a secret agent.'; S.quip=t; push(); emit('ding',t); }
+  else if(f.step==='s1'){
+    f.a[1]=v; f.res=[0,1].map(function(i){ var ok=f.a[i]===!!f.item[2]; var d=ok?f.w[i]:-f.w[i]; S.teams[i].s=Math.max(0,S.teams[i].s+d); return {ok:ok,d:d}; });
+    var both=f.res[0].ok&&f.res[1].ok, none=!f.res[0].ok&&!f.res[1].ok;
+    var cm=both?'Both teams got it! Show-offs!':none?'Both wrong! Wow, you really committed.':tn(f.res[0].ok?0:1)+' wins the wager! The other team… tried.';
+    f.step='rev'; S.res={id:Date.now(),ok:true}; S.quip=cm; push();
+    emit('drum','The answer is… '+(f.item[2]?'REAL':'FAKE')+'! '+f.item[3].replace(/^(REAL|FAKE)!\s*/,'')+' '+cm);
+  }
+}
+function crown(){
+  var a=S.teams[0].s,b=S.teams[1].s;
+  var t=a===b?'It’s a TIE! Nobody wins, everybody’s annoyed. Rematch!':'And the winner is… '+tn(a>b?0:1)+'! Take a bow! Everybody else, take a seat.';
+  S.screen='over'; S.quip=''; push(); emit('fan',t);
+}
+function toSetup(){ S.screen='setup'; S.teams.forEach(function(t){ t.s=0; }); scPrev=[0,0]; S.res=null; S.quip=''; push(); }
+
+/* ---------- SYNC ---------- */
+function push(){ render(); if(!isTV&&ch){ try{ ch.postMessage({t:'state',S:JSON.parse(JSON.stringify(S))}); }catch(e){} } }
+if(ch){
+  ch.onmessage=function(e){ var m=e.data||{};
+    if(isTV){ if(m.t==='state'){ Object.assign(S,m.S); render(); } else if(m.t==='snd'){ play(m.n,m.tx); } }
+    else { if(m.t==='hello'){ tvSeen=Date.now(); push(); } else if(m.t==='hb'){ tvSeen=Date.now(); } }
+  };
+  if(isTV){ try{ ch.postMessage({t:'hello'}); setInterval(function(){ ch.postMessage({t:'hb'}); },2000); }catch(e){} }
+}
+
+/* ---------- RENDER ---------- */
+function renderBoard(){
+  var b=$('#board'); if(S.screen==='setup'){ b.style.display='none'; return; } b.style.display='';
+  var T=S.teams,on=-1;
+  if(S.screen==='turn'&&cur())on=cur().team;
+  if(S.screen==='final'&&S.fin){ on={w0:0,s0:0,w1:1,s1:1}[S.fin.step]; if(on===undefined)on=-1; }
+  var card=function(i){ var bump=scPrev[i]!==T[i].s?' bump':''; return '<div class="team t'+i+(on===i?' on':'')+'"><div class="em">'+T[i].e+'</div><div class="nmw"><div class="nm">'+esc(T[i].n)+'</div></div><div class="sc'+bump+'">'+T[i].s+'</div></div>'; };
+  var mid=(S.screen==='final'||S.screen==='over')?'FINAL':'R'+((cur()?cur().r:0)+1)+'/'+ROUNDS.length;
+  b.innerHTML=card(0)+'<div class="mid">'+mid+'</div>'+card(1);
+  scPrev=[T[0].s,T[1].s];
+}
+function setupHTML(){
+  var t=S.teams,E=['🦄','🦖','🐼','🦸','🐸','🚀','🍕','🐙','👑','🤖'];
+  var row=function(i){ return '<div class="trow"><span class="big">'+t[i].e+'</span><input data-act="name" data-i="'+i+'" maxlength="14" value="'+esc(t[i].n)+'" aria-label="Team '+(i+1)+' name"></div><div class="pick">'+E.map(function(e){ return '<button class="ep'+(t[i].e===e?' on':'')+'" data-act="emoji" data-i="'+i+'" data-e="'+e+'" aria-label="Pick '+e+'">'+e+'</button>'; }).join('')+'</div>'; };
+  return '<div class="pg"><div class="logo">🎪 SILLY<br>SHOWDOWN</div><div class="sub wide">Kids vs Parents. One phone. Zero mercy.</div>'+
+  '<div class="panel">'+row(0)+row(1)+'</div>'+
+  '<div class="panel"><div class="lab">😈 Handicap team (gets silly extra challenges)</div><div class="pills">'+
+  [0,1].map(function(i){ return '<button class="pill'+(S.hc===i?' on':'')+'" data-act="hc" data-v="'+i+'"><span data-nm="'+i+'">'+esc(t[i].n)+'</span></button>'; }).join('')+
+  '<button class="pill'+(S.hc===-1?' on':'')+'" data-act="hc" data-v="-1">Nobody</button></div>'+
+  '<div class="lab">⏱ How long?</div><div class="pills"><button class="pill'+(S.len===1?' on':'')+'" data-act="len" data-v="1">Standard: about 25 min</button><button class="pill'+(S.len===2?' on':'')+'" data-act="len" data-v="2">Long: about 45 min</button></div>'+
+  '<div class="pills"><button class="pill'+(S.sound?' on':'')+'" data-act="sound">🔊 Sound effects</button><button class="pill'+(S.voice?' on':'')+'" data-act="voice">🗣️ Announcer voice</button></div><div class="lab">🎤 Host voice (pick the best one on your device)</div><div class="pills">'+voiceSelect()+'<button class="pill" data-act="vtest">▶ Test</button></div></div>'+
+  '<div class="tvnote">📺 Casting to a TV? Tap “TV view” below, then cast that tab. Secret prompts stay on your phone. No TV view? You’ll get a HOLD TO PEEK button instead.</div></div>';
+}
+function voiceSelect(){ var l=voiceList(); return '<select class="sel" data-act="vsel" aria-label="Host voice"><option value="">Auto (best available)</option>'+l.map(function(v){ return '<option value="'+esc(v.name)+'"'+(S.vname===v.name?' selected':'')+'>'+esc(v.name)+'</option>'; }).join('')+'</select>'; }
+function tvWait(){ return '<div class="pg"><div class="logo">🎪 SILLY<br>SHOWDOWN</div><div class="sub wide">Waiting for the host to start the show…</div></div>'; }
+function introHTML(){
+  var T=cur(),R=ROUNDS[T.r]; var hc=(S.hc>=0&&R.twist)?'<div class="twist">😈 '+esc(S.teams[S.hc].n)+' get silly penalties this round!</div>':'';
+  return '<div class="pg"><div class="kick">ROUND '+(T.r+1)+' OF '+ROUNDS.length+'</div><div class="bigemoji">'+R.e+'</div><div class="title">'+R.name+'</div><div class="sub">'+esc(R.rule)+'</div>'+hc+'</div>';
+}
+function promptBox(T,R){
+  var box='<div class="prompt"><div class="pe">'+T.item[0]+'</div><div class="pt">'+esc(fill(T.item[1],T.team))+'</div></div>';
+  if(!R.secret)return box;
+  if(S.phase==='result')return box;
+  if(isTV)return '<div class="prompt hush"><div class="pe">🤫</div><div class="pt">SHHH! Only the '+R.actor+' knows!</div></div>';
+  if(tvConn())return box;
+  return '<div class="prompt" id="peekbox" style="display:none"><div class="pe">'+T.item[0]+'</div><div class="pt">'+esc(fill(T.item[1],T.team))+'</div></div>'+
+    '<button class="btn alt peek" id="peekBtn" type="button">🤫 HOLD TO PEEK<small>only the '+R.actor+' looks!</small></button>';
+}
+function turnHTML(){
+  var T=cur(),R=ROUNDS[T.r],i=T.team,tm=S.teams[i];
+  if(S.phase==='result')return resultHTML();
+  var tw=T.tw?'<div class="twist">😈 PENALTY: '+esc(T.tw)+'</div>':'';
+  if(S.phase==='ready'){
+    var h='<div class="pg"><div class="chip">'+R.e+' '+R.name+'</div><div class="bigemoji">'+tm.e+'</div><div class="title wide">'+esc(tm.n)+'<br><span class="yu">YOU’RE UP!</span></div>'+tw+'<div class="sub wide">'+esc(fill(R.hint,i))+'</div>';
+    if(R.secret)h+=promptBox(T,R);
+    return h+'<div class="sub">⏱ '+R.secs+' seconds</div></div>';
+  }
+  var sec=S.timerEnd?Math.max(0,Math.ceil((S.timerEnd-Date.now())/1000)):R.secs;
+  return '<div class="pg"><div class="upline">'+tm.e+' '+esc(tm.n)+' · '+R.e+' '+R.name+'</div>'+tw+promptBox(T,R)+
+    (S.timeUp?'<div class="timeup">⏰ TIME’S UP!</div>':'')+
+    '<div class="timer"><div class="tnum" id="tnum">'+sec+'</div><div class="tbar"><i id="tbar"></i></div></div>'+
+    '<div class="sub wide">'+esc(fill(R.hint,i))+'</div></div>';
+}
+function resultHTML(){
+  var T=cur(),R=ROUNDS[T.r],i=T.team,res=S.res,h;
+  var small='<div class="prompt small"><div class="pe">'+T.item[0]+'</div><div class="pt">'+esc(fill(T.item[1],i))+'</div></div>';
+  var pts=res.ok?'<div class="pts">+'+res.pts+(res.bonus?' ⚡ speed bonus!':'')+'</div>':'<div class="pts">+0</div>';
+  if(R.k==='rf'){
+    h='<div class="pg"><div class="bigemoji">'+(res.ok?'🎉':'😬')+'</div><div class="title '+(res.ok?'okc':'nc')+'">'+res.head+'</div>'+pts+small+
+      '<div class="verdict '+(T.item[2]?'okc':'nc')+'">'+(T.item[2]?'✅ REAL!':'🚫 FAKE!')+'</div><div class="why">'+esc(T.item[3].replace(/^(REAL|FAKE)!\s*/,''))+'</div>'+
+      '<div class="rl">'+esc(S.teams[i].n)+' said '+(res.said?'REAL':'FAKE')+'</div></div>';
+  } else {
+    h='<div class="pg"><div class="bigemoji">'+(res.ok?'🎉':'😬')+'</div><div class="title '+(res.ok?'okc':'nc')+'">'+res.head+'</div>'+pts+small+'<div class="why">'+esc(res.line)+'</div></div>';
+  }
+  return h;
+}
+function finalHTML(){
+  var f=S.fin,T=S.teams,it=f.item;
+  var stmt='<div class="prompt"><div class="pe">'+it[0]+'</div><div class="pt">'+esc(it[1])+'</div></div>';
+  if(f.step==='w0'||f.step==='w1'){
+    var i=f.step==='w0'?0:1;
+    return '<div class="pg"><div class="kick">💰 FINAL SHOWDOWN</div><div class="bigemoji">'+T[i].e+'</div><div class="title wide">'+esc(T[i].n)+'</div><div class="sub wide">How much do you wager? Right = win it. Wrong = lose it!</div>'+(i===1?'<div class="rl">🔒 '+esc(T[0].n)+' locked in</div>':'')+'</div>';
+  }
+  if(f.step==='s0'||f.step==='s1'){
+    var j=f.step==='s0'?0:1;
+    return '<div class="pg"><div class="kick">💰 FINAL SHOWDOWN · wagers locked 🔒</div>'+stmt+'<div class="title wide">'+T[j].e+' '+esc(T[j].n)+'</div><div class="sub wide">REAL or FAKE? Whisper your answer to the host!</div></div>';
+  }
+  var rows=[0,1].map(function(i){ var r=f.res[i]; return '<div class="rl '+(r.ok?'okc':'nc')+'">'+T[i].e+' '+esc(T[i].n)+' said '+(f.a[i]?'REAL':'FAKE')+': '+(r.ok?'+':'−')+f.w[i]+(r.ok?' 🎉':' 😬')+'</div>'; }).join('');
+  return '<div class="pg"><div class="kick">💰 THE ANSWER IS…</div>'+stmt+'<div class="verdict '+(it[2]?'okc':'nc')+'">'+(it[2]?'✅ REAL!':'🚫 FAKE!')+'</div><div class="why">'+esc(it[3].replace(/^(REAL|FAKE)!\s*/,''))+'</div>'+rows+'</div>';
+}
+function overHTML(){
+  var a=S.teams[0],b=S.teams[1],tie=a.s===b.s,w=a.s>b.s?a:b;
+  return '<div class="pg"><div class="bigemoji">🏆</div><div class="title wide">'+(tie?'IT’S A TIE!':w.e+' '+esc(w.n)+'<br><span class="yu">WIN!</span>')+'</div><div class="sub wide">'+(tie?'Everybody wins. Also, rematch.':rand(WIN_LINE))+'</div></div>';
+}
+function renderStage(){
+  var st=$('#stage'),h='';
+  switch(S.screen){
+    case 'setup': h=isTV?tvWait():setupHTML(); break;
+    case 'intro': h=introHTML(); break;
+    case 'turn': h=turnHTML(); break;
+    case 'final': h=finalHTML(); break;
+    case 'over': h=overHTML(); break;
+  }
+  if(S.quip&&(S.screen==='intro'||S.screen==='final'||(S.screen==='turn'&&S.phase==='ready')))h=h.replace('<div class="pg">','<div class="pg"><div class="ann">🎤 '+esc(S.quip)+'</div>');
+  var key=S.screen+'|'+S.phase+'|'+S.ti+'|'+(S.fin?S.fin.step:'');
+  st.className='stage'+(key!==lastKey?' animate':''); lastKey=key;
+  st.innerHTML=h;
+}
+function renderCtl(){
+  var c=$('#ctl'); if(isTV){ c.style.display='none'; c.innerHTML=''; return; } c.style.display='';
+  var m='',T=cur(),R=T?ROUNDS[T.r]:null,canRe=false;
+  switch(S.screen){
+    case 'setup': m='<button class="btn go" data-act="start">START THE SHOW 🎬</button>'; break;
+    case 'intro': m='<button class="btn go" data-act="introgo">LET’S GO! ▶</button>'; break;
+    case 'turn':
+      if(S.phase==='ready'){ m='<button class="btn go" data-act="begin">START ⏱ '+R.secs+'s</button>'; canRe=true; }
+      else if(S.phase==='live'){ canRe=true; m=R.k==='rf'
+        ? '<div class="two"><button class="btn alt" data-act="say" data-v="1">✅ REAL</button><button class="btn" data-act="say" data-v="0">🚫 FAKE</button></div>'
+        : '<div class="two"><button class="btn yes" data-act="grade" data-v="1">'+R.yes+'</button><button class="btn no" data-act="grade" data-v="0">'+R.no+'</button></div>'; }
+      else m='<button class="btn go" data-act="next">NEXT ▶</button>';
+      break;
+    case 'final':
+      var st=S.fin.step;
+      if(st==='w0'||st==='w1') m='<div class="four">'+[[0,'0 🐔 chicken'],[100,'100'],[250,'250'],[500,'500 🔥']].map(function(x){ return '<button class="btn '+(x[0]===500?'no':x[0]===0?'alt':'go')+'" data-act="wager" data-v="'+x[0]+'">'+x[1]+'</button>'; }).join('')+'</div>';
+      else if(st==='s0'||st==='s1') m='<div class="two"><button class="btn alt" data-act="fsay" data-v="1">✅ REAL</button><button class="btn" data-act="fsay" data-v="0">🚫 FAKE</button></div>';
+      else m='<button class="btn go" data-act="crown">CROWN THE WINNER 👑</button>';
+      break;
+    case 'over': m='<div class="two"><button class="btn go" data-act="start">PLAY AGAIN 🔁</button><button class="btn alt" data-act="newsetup">NEW SETUP ⚙️</button></div>'; break;
+  }
+  var tools='<div class="tools">'+(tvConn()?'<span class="tvon">📺 TV connected</span>':'<button class="tool" data-act="tv">📺 TV view</button>')+
+    '<button class="tool" data-act="sound" aria-label="Toggle sound effects">'+(S.sound?'🔊':'🔇')+'</button>'+
+    '<button class="tool" data-act="voice" aria-label="Toggle announcer voice">'+(S.voice?'🗣️':'🤐')+'</button>'+
+    (canRe?'<button class="tool" data-act="reroll">🔀 New prompt</button>':'')+
+    (S.screen!=='setup'?'<button class="tool" data-act="quit">'+(quitArm?'Sure? Tap again':'🏠 Quit')+'</button>':'')+'</div>';
+  c.innerHTML=m+tools;
+}
+function render(){
+  renderBoard(); renderStage(); renderCtl();
+  if(S.screen==='turn'&&S.phase==='result'&&S.res&&S.res.id!==lastResId){ lastResId=S.res.id; if(S.res.ok)burst(24); }
+  if(S.screen==='final'&&S.fin&&S.fin.step==='rev'&&S.res&&S.res.id!==lastResId){ lastResId=S.res.id; burst(30); }
+  if(S.screen==='over'){ if(!cfOn){ cfOn=true; burst(90); } } else cfOn=false;
+}
+
+/* ---------- EVENTS ---------- */
+var A={
+  emoji:function(b){ S.teams[+b.dataset.i].e=b.dataset.e; save(); render(); },
+  hc:function(b){ S.hc=+b.dataset.v; save(); render(); },
+  len:function(b){ S.len=+b.dataset.v; save(); render(); },
+  sound:function(){ S.sound=!S.sound; save(); push(); },
+  voice:function(){ S.voice=!S.voice; if(!S.voice){ try{ speechSynthesis.cancel(); }catch(e){} } save(); push(); },
+  vtest:function(){ var o=S.voice; S.voice=true; speak(rand(TESTS)); S.voice=o; },
+  start:start, introgo:goTurn, begin:begin, next:next, reroll:reroll, crown:crown, newsetup:toSetup,
+  grade:function(b){ grade(b.dataset.v==='1'); },
+  say:function(b){ say(b.dataset.v==='1'); },
+  wager:function(b){ wager(+b.dataset.v); },
+  fsay:function(b){ finalSay(b.dataset.v==='1'); },
+  tv:function(){ try{ window.open(location.href.split('#')[0].split('?')[0]+'#tv','_blank'); }catch(e){} },
+  quit:function(){ if(!quitArm){ quitArm=true; render(); setTimeout(function(){ quitArm=false; render(); },3000); } else { quitArm=false; toSetup(); } }
+};
+document.addEventListener('click',function(e){
+  if(isTV)return; var b=e.target.closest('[data-act]'); if(!b||b.dataset.act==='name')return;
+  ac(); var f=A[b.dataset.act]; if(f)f(b);
+});
+document.addEventListener('change',function(e){
+  var el=e.target; if(!el||!el.dataset||el.dataset.act!=='vsel')return; S.vname=el.value; save();
+  var o=S.voice; S.voice=true; speak(rand(TESTS)); S.voice=o;
+});
+document.addEventListener('input',function(e){
+  var el=e.target; if(!el||!el.dataset||el.dataset.act!=='name')return;
+  var i=+el.dataset.i; S.teams[i].n=el.value; save();
+  document.querySelectorAll('[data-nm="'+i+'"]').forEach(function(n){ n.textContent=el.value; });
+});
+document.addEventListener('pointerdown',function(e){ if(e.target.closest&&e.target.closest('#peekBtn')){ var p=$('#peekbox'); if(p)p.style.display=''; } });
+function unpeek(){ var p=$('#peekbox'); if(p)p.style.display='none'; }
+document.addEventListener('pointerup',unpeek); document.addEventListener('pointercancel',unpeek);
+document.addEventListener('contextmenu',function(e){ if(e.target.closest&&e.target.closest('#peekBtn'))e.preventDefault(); });
+
+/* ---------- TIMER LOOP ---------- */
+setInterval(function(){
+  if(S.screen==='turn'&&S.phase==='live'&&S.timerEnd){
+    var ms=Math.max(0,S.timerEnd-Date.now()),sec=Math.ceil(ms/1000),n=$('#tnum'),bar=$('#tbar');
+    if(n){ n.textContent=sec; n.classList.toggle('hot',sec<=10); }
+    if(bar){ bar.style.width=(ms/(S.timerSecs*1000)*100)+'%'; bar.classList.toggle('hot',sec<=10); }
+    if(!isTV&&sec!==lastSec){ lastSec=sec; if(sec===10&&S.timerSecs>=30)emit('tick',rand(TEN)); else if(sec<=5&&sec>0)emit('tick'); if(sec===0&&!S.timeUp){ S.timeUp=true; push(); emit('buzz',rand(TIMEUP)); } }
+  } else lastSec=-1;
+  if(!isTV){ var c=tvConn(); if(c!==lastConn){ lastConn=c; render(); } }
+},250);
+
+/* ---------- BOOT ---------- */
+load();
+try{ if(window.speechSynthesis)speechSynthesis.onvoiceschanged=function(){ if(S.screen==='setup'&&!isTV)render(); }; }catch(e){}
+if(isTV){
+  document.title='Silly Showdown: TV view';
+  var ov=$('#ov'); ov.style.display='flex'; ov.innerHTML='<div>📺 TV VIEW<small>Tap once to turn on sound</small></div>';
+  ov.addEventListener('pointerdown',function(){ ov.style.display='none'; ac(); try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} });
+}
+render();
+})();
+</script>
+</body>
+</html>
